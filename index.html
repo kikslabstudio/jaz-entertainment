@@ -141,6 +141,7 @@
     <button data-f="bollywood" onclick="setFilter('bollywood',this)">🇮🇳 Bollywood</button>
     <button data-f="south" onclick="setFilter('south',this)">🌏 South</button>
     <button data-f="hollywood" onclick="setFilter('hollywood',this)">🎬 Hollywood</button>
+    <button data-f="tollywood" onclick="setFilter('tollywood',this)">🔥 Tollywood</button>
     <button data-f="anime" onclick="setFilter('anime',this)">🌸 Anime</button>
     <button data-f="new" onclick="setFilter('new',this)">🆕 New</button>
   </div>
@@ -162,6 +163,7 @@
         <div class="fbtns">
           <a class="fbtn dl" id="m-dl" href="#" target="_blank" rel="noopener" onclick="openAds()">⬇ Download HD</a>
           <a class="fbtn tg" href="https://t.me/KiksLabMovies" target="_blank" rel="noopener">📩 Telegram</a>
+          <a class="fbtn" id="m-trailer" href="#" target="_blank" rel="noopener" style="background:linear-gradient(90deg,#ff0000,#ff5e3a);color:#fff;display:none">▶ Trailer</a>
         </div>
       </div>
     </div>
@@ -181,20 +183,21 @@
     const SCRAPER_LINKS = (window.SCRAPER_LINKS) || {};
     function getLink(title){ return SCRAPER_LINKS[title] || TG; }
 
-    const TITLES = {trending:"🔥 Trending Movies", bollywood:"🇮🇳 Bollywood HD", south:"🌏 South Hindi Dubbed", hollywood:"🎬 Hollywood", anime:"🌸 Anime & Series", new:"🆕 New Releases"};
+    const TITLES = {trending:"🔥 Trending Movies", bollywood:"🇮🇳 Bollywood HD", south:"🌏 South Hindi Dubbed", hollywood:"🎬 Hollywood", tolywood:"🔥 Tollywood", anime:"🌸 Anime & Series", new:"🆕 New Releases"};
     // section -> source. Prefer scraper data (SCRAPER_MOVIES), fallback to live TMDB
     function load(filter){
       showSkeleton();
       document.getElementById("sec-title").textContent = TITLES[filter];
       const sm = (window.SCRAPER_MOVIES) || [];
-      const map = {trending:"trending",bollywood:"bollywood",south:"south",hollywood:"hollywood",anime:"anime",new:"new"};
+      const map = {trending:"trending",bollywood:"bollywood",south:"south",hollywood:"hollywood",tollywood:"tollywood",anime:"anime",new:"new"};
       let list = sm.filter(m=>m._sec===map[filter]);
       if(list.length){ render(list); if(filter==="trending"&&list[0]) setFeatured(list[0]); return; }
       // live fallback
       let url;
       if(filter==="trending") url = `https://api.themoviedb.org/3/trending/movie/day?api_key=${TMDB_KEY}`;
-      else if(filter==="bollywood") url = `https://api.themoviedb.org/3/movie/now_playing?api_key=${TMDB_KEY}&region=IN&with_original_language=hi`;
-      else if(filter==="south") url = `https://api.themoviedb.org/3/discover/movie?api_key=${TMDB_KEY}&region=IN&with_genres=18&with_original_language=ta`;
+      else if(filter==="bollywood") url = `https://api.themoviedb.org/3/discover/movie?api_key=${TMDB_KEY}&region=IN&with_original_language=hi&sort_by=popularity.desc`;
+      else if(filter==="south") url = `https://api.themoviedb.org/3/discover/movie?api_key=${TMDB_KEY}&region=IN&with_original_language=ta&sort_by=popularity.desc`;
+      else if(filter==="tollywood") url = `https://api.themoviedb.org/3/discover/movie?api_key=${TMDB_KEY}&region=IN&with_original_language=te&sort_by=popularity.desc`;
       else if(filter==="hollywood") url = `https://api.themoviedb.org/3/movie/popular?api_key=${TMDB_KEY}`;
       else if(filter==="new") url = `https://api.themoviedb.org/3/movie/now_playing?api_key=${TMDB_KEY}`;
       else if(filter==="anime") url = `https://api.themoviedb.org/3/discover/movie?api_key=${TMDB_KEY}&with_genres=16&with_origin_country=JP&sort_by=popularity.desc`;
@@ -267,6 +270,9 @@
       document.getElementById("m-title").textContent = m.title;
       document.getElementById("m-meta").textContent = "★ " + (m.vote_average?m.vote_average.toFixed(1):'—') + "  •  " + (m.release_date?m.release_date.slice(0,4):'—');
       document.getElementById("m-overview").textContent = m.overview || "No description available.";
+      const tl = document.getElementById("m-trailer");
+      if(m.trailer){ tl.href = m.trailer; tl.style.display="inline-block"; }
+      else { tl.style.display="none"; }
       document.getElementById("m-dl").href = getLink(m.title);
       document.getElementById("modal").classList.add("show");
     }
