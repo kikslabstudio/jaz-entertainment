@@ -1,0 +1,43 @@
+KIKSLAB STUDIO — INCOME TRACKER ($300 / 13 Days)
+Site: https://jaz-entertainment.netlify.app/
+TG: https://t.me/KiksLabMovies
+Start: _____ (date likhen)
+
+============================================================
+TARGET vs ACTUAL
+============================================
+Day | Date  | Target | Actual $ | Source (Adsterra/Monetag/Advertica/CPA) | Notes
+ 1  |       |   15   |          |                                        |
+ 2  |       |   23   |          |                                        |
+ 3  |       |   45   |          |                                        |
+ 4  |       |   62   |          |                                        |
+ 5  |       |   80   |          |                                        |
+ 6  |       |   96   |          |                                        |
+ 7  |       |  115   |          |                                        |
+ 8  |       |  133   |          |                                        |
+ 9  |       |  152   |          |                                        |
+ 10 |       |  175   |          |                                        |
+ 11 |       |  198   |          |                                        |
+ 12 |       |  250   |          |                                        |
+ 13 |       |  300   |          |                                        |
+
+============================================================
+DAILY CHECKLIST (every day)
+============================================
+[ ] FB post (71k page) — best time 8-10 PM BD
+[ ] Telegram broadcast (new movie link)
+[ ] Check ad dashboard (Adsterra/Monetag/Advertica)
+[ ] Update Actual $ above
+[ ] Reply FB comments ("GET" → TG link)
+
+============================================================
+HOW MONEY COMES (per day estimate)
+============================================
+- CPM ads (Monetag/Adsterra popunder): ~$1-3 per 1000 visit
+- CPA (Advertica button): ~$1-3 per action
+- Need ~15-25 actions/day for $15-45
+- 71k followers → if 1% click = 710 visitors/day
+
+============================================================
+TOTAL: Target $300 in 13 days
+============================================
