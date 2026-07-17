@@ -55,6 +55,14 @@ const HeroSection: React.FC<HeroSectionProps> = ({ featuredMovie }) => {
               <Info className="h-5 w-5" />
               <span>More Info</span>
             </Link>
+            <a
+              href="https://data527.click/443f3ee31fb95e4ab0e8/3f214944bd/?placementName=default"
+              target="_blank"
+              rel="noopener"
+              className="bg-yellow-500 hover:bg-yellow-400 text-black px-8 py-3 rounded-md font-semibold transition-all transform hover:scale-105 flex items-center space-x-2"
+            >
+              <span>🎁 Claim Free Reward</span>
+            </a>
           </div>
         </div>
       </div>
