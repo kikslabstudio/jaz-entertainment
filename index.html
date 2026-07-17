@@ -3,8 +3,14 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>KIKSLAB STUDIO — Free Movies & Entertainment</title>
-  <meta name="description" content="Watch latest movies, anime & web series in HD. Download links via Telegram." />
+  <title>KIKSLAB STUDIO — Free Bollywood, Hollywood, South Hindi Dubbed Movies</title>
+  <meta name="description" content="Watch & download latest Bollywood, Hollywood, South Hindi Dubbed movies & anime in HD. Free HD movies with Telegram download links." />
+  <meta name="keywords" content="free movies, bollywood, hollywood, south hindi dubbed, anime, download, hd, kikslab" />
+  <meta property="og:title" content="KIKSLAB STUDIO — Free HD Movies" />
+  <meta property="og:description" content="Free Bollywood, Hollywood, South Hindi Dubbed movies & anime in HD. Telegram download links." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://jaz-entertainment.netlify.app/" />
+  <link rel="canonical" href="https://jaz-entertainment.netlify.app/" />
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎬</text></svg>" />
 
   <!-- ===== AD NETWORKS (live) ===== -->
@@ -132,9 +138,11 @@
 
   <div class="filters">
     <button class="active" data-f="trending" onclick="setFilter('trending',this)">🔥 Trending</button>
-    <button data-f="popular" onclick="setFilter('popular',this)">⭐ Popular</button>
-    <button data-f="new" onclick="setFilter('new',this)">🆕 New</button>
+    <button data-f="bollywood" onclick="setFilter('bollywood',this)">🇮🇳 Bollywood</button>
+    <button data-f="south" onclick="setFilter('south',this)">🌏 South</button>
+    <button data-f="hollywood" onclick="setFilter('hollywood',this)">🎬 Hollywood</button>
     <button data-f="anime" onclick="setFilter('anime',this)">🌸 Anime</button>
+    <button data-f="new" onclick="setFilter('new',this)">🆕 New</button>
   </div>
 
   <h2 class="sec-title" id="sec-title">🔥 Trending Movies</h2>
@@ -173,32 +181,28 @@
     const SCRAPER_LINKS = (window.SCRAPER_LINKS) || {};
     function getLink(title){ return SCRAPER_LINKS[title] || TG; }
 
-    const TITLES = {trending:"🔥 Trending Movies", popular:"⭐ Popular Movies", new:"🆕 New Releases", anime:"🌸 Anime & Series"};
-    let GENRE_MAP = {};
-
-    async function initGenres(){
-      try{
-        const j = await (await fetch(`https://api.themoviedb.org/3/genre/movie/list?api_key=${TMDB_KEY}`)).json();
-        (j.genres||[]).forEach(g=>GENRE_MAP[g.id]=g.name);
-      }catch(e){}
-    }
-
-    async function load(filter){
+    const TITLES = {trending:"🔥 Trending Movies", bollywood:"🇮🇳 Bollywood HD", south:"🌏 South Hindi Dubbed", hollywood:"🎬 Hollywood", anime:"🌸 Anime & Series", new:"🆕 New Releases"};
+    // section -> source. Prefer scraper data (SCRAPER_MOVIES), fallback to live TMDB
+    function load(filter){
       showSkeleton();
       document.getElementById("sec-title").textContent = TITLES[filter];
+      const sm = (window.SCRAPER_MOVIES) || [];
+      const map = {trending:"trending",bollywood:"bollywood",south:"south",hollywood:"hollywood",anime:"anime",new:"new"};
+      let list = sm.filter(m=>m._sec===map[filter]);
+      if(list.length){ render(list); if(filter==="trending"&&list[0]) setFeatured(list[0]); return; }
+      // live fallback
       let url;
       if(filter==="trending") url = `https://api.themoviedb.org/3/trending/movie/day?api_key=${TMDB_KEY}`;
-      else if(filter==="popular") url = `https://api.themoviedb.org/3/movie/popular?api_key=${TMDB_KEY}`;
+      else if(filter==="bollywood") url = `https://api.themoviedb.org/3/movie/now_playing?api_key=${TMDB_KEY}&region=IN&with_original_language=hi`;
+      else if(filter==="south") url = `https://api.themoviedb.org/3/discover/movie?api_key=${TMDB_KEY}&region=IN&with_genres=18&with_original_language=ta`;
+      else if(filter==="hollywood") url = `https://api.themoviedb.org/3/movie/popular?api_key=${TMDB_KEY}`;
       else if(filter==="new") url = `https://api.themoviedb.org/3/movie/now_playing?api_key=${TMDB_KEY}`;
       else if(filter==="anime") url = `https://api.themoviedb.org/3/discover/movie?api_key=${TMDB_KEY}&with_genres=16&with_origin_country=JP&sort_by=popularity.desc`;
-      try{
-        const j = await (await fetch(url)).json();
-        const list = j.results || [];
-        render(list);
-        if(filter==="trending" && list[0]) setFeatured(list[0]);
-      }catch(e){
+      fetch(url).then(r=>r.json()).then(j=>{
+        const l = j.results||[]; render(l); if(filter==="trending"&&l[0]) setFeatured(l[0]);
+      }).catch(()=>{
         document.getElementById("grid").innerHTML = '<div style="padding:40px;color:var(--muted);text-align:center">Could not load. Check connection.</div>';
-      }
+      });
     }
 
     function showSkeleton(){
@@ -257,6 +261,7 @@
     }
 
     function openModal(m){
+      openAds(); // detail-page ad impression (mlfbd-style)
       const bg = m.backdrop_path ? BACKDROP+m.backdrop_path : (m.poster_path?IMG+m.poster_path:"");
       if(bg) document.getElementById("m-bg").style.backgroundImage = `url('${bg}')`;
       document.getElementById("m-title").textContent = m.title;
