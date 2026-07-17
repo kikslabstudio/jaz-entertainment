@@ -91,7 +91,8 @@
     .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:#333;color:#fff;padding:12px 22px;border-radius:30px;font-size:14px;z-index:300;opacity:0;transition:.35s;pointer-events:none}
     .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
     .float-tg{position:fixed;bottom:22px;right:22px;z-index:95;background:var(--tg);color:#fff;width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:26px;box-shadow:0 8px 24px rgba(42,171,238,.45)}
-    footer{text-align:center;color:var(--muted);font-size:13px;padding:40px 4%;border-top:1px solid #222;margin-top:30px}
+    .player{width:100%;aspect-ratio:16/9;background:#000;display:flex;align-items:center;justify-content:center}
+    .player iframe{width:100%;height:100%;border:0}
     footer a{color:var(--tg)}
     @media(max-width:600px){.nav{display:none}.tile{width:150px;height:220px}.hero{height:75vh}}
   </style>
@@ -127,6 +128,17 @@
   <div class="toast" id="toast">Opening...</div>
   <a class="float-tg" href="https://t.me/KiksLabMovies" target="_blank" title="Telegram">📩</a>
 
+  <div class="modal" id="playmodal" onclick="if(event.target===this)closePlay()">
+    <div class="box" style="max-width:900px">
+      <button class="mclose" onclick="closePlay()">✕</button>
+      <div class="player" id="player"></div>
+      <div style="padding:14px 20px;display:flex;gap:10px;flex-wrap:wrap">
+        <a class="hbtn info" id="p-dl" href="#" target="_blank" rel="noopener" onclick="openAds()">⬇ Download HD</a>
+        <a class="hbtn play" href="https://t.me/KiksLabMovies" target="_blank" rel="noopener">📩 Telegram</a>
+      </div>
+    </div>
+  </div>
+
   <div class="modal" id="modal" onclick="if(event.target===this)closeModal()">
     <div class="box">
       <button class="mclose" onclick="closeModal()">✕</button>
@@ -136,7 +148,8 @@
         <div class="meta" id="m-meta"></div>
         <p id="m-overview"></p>
         <div class="fbtns">
-          <a class="hbtn play" id="m-dl" href="#" target="_blank" rel="noopener" onclick="openAds()">⬇ Download HD</a>
+          <div class="hbtn play" id="m-play" onclick="playMovie(currentMovie)">▶ Play Movie</div>
+          <a class="hbtn info" id="m-dl" href="#" target="_blank" rel="noopener" onclick="openAds()">⬇ Download HD</a>
           <a class="hbtn info" href="https://t.me/KiksLabMovies" target="_blank" rel="noopener">📩 Telegram</a>
           <a class="hbtn" id="m-trailer" href="#" target="_blank" rel="noopener" style="background:#e50914;display:none">▶ Trailer</a>
         </div>
@@ -167,6 +180,7 @@
       {key:"new", title:"🆕 New Releases"},
     ];
     const SM = (window.SCRAPER_MOVIES) || [];
+    let currentMovie = null;
 
     // HERO billboard (rotates)
     let heroList = SM.filter(m=>m._sec==="trending");
@@ -181,7 +195,7 @@
       document.getElementById("h-rate").textContent = "★ " + (m.rating?m.rating.toFixed(1):'—');
       document.getElementById("h-year").textContent = m.year||'—';
       document.getElementById("h-overview").textContent = m.overview||"";
-      document.getElementById("h-play").onclick = ()=>{ if(m.trailer) window.open(m.trailer,'_blank'); else openModal(m); };
+      document.getElementById("h-play").onclick = ()=>{ playMovie(m); };
       document.getElementById("h-info").onclick = ()=>openModal(m);
     }
     setHero();
@@ -224,6 +238,7 @@
     }
 
     function openModal(m){
+      currentMovie = m;
       openAds();
       const bg = m.poster ? BACKDROP + m.poster.split('/w500')[1] : "";
       if(bg) document.getElementById("m-bg").style.backgroundImage = `url('${bg}')`;
@@ -236,6 +251,32 @@
       document.getElementById("modal").classList.add("show");
     }
     function closeModal(){ document.getElementById("modal").classList.remove("show"); }
+
+    // PLAYER (embed) — configurable sources, fallback to trailer
+    const EMBED_BASES = [
+      "https://vidsrc.icu/embed/movie/",   // free embed (tmdb id)
+      "https://www.2embed.to/embed/movie/",
+    ];
+    function playMovie(m){
+      openAds();
+      const p = document.getElementById("player");
+      const src = (m.tmdb_id && EMBED_BASES[0]) ? EMBED_BASES[0]+m.tmdb_id : (m.trailer||"");
+      if(src.includes("youtu")){
+        p.innerHTML = `<iframe src="${src}" allow="autoplay;encrypted-media" allowfullscreen></iframe>`;
+      } else if(m.tmdb_id){
+        // try embeds in order
+        p.innerHTML = EMBED_BASES.map(b=>`<iframe src="${b}${m.tmdb_id}" allow="autoplay;encrypted-media" allowfullscreen style="display:none"></iframe>`).join("")+
+          `<div id="embmsg" style="color:#fff;padding:20px;text-align:center">Loading player...</div>`;
+        // show first working iframe
+        const frames = p.querySelectorAll("iframe");
+        frames[0].style.display="block";
+      } else {
+        p.innerHTML = `<div style="color:#fff;padding:30px;text-align:center">Play unavailable.<br><a href="${getLink(m.title)}" target="_blank" style="color:var(--tg)">Download via Telegram</a></div>`;
+      }
+      document.getElementById("p-dl").href = getLink(m.title);
+      document.getElementById("playmodal").classList.add("show");
+    }
+    function closePlay(){ document.getElementById("playmodal").classList.remove("show"); document.getElementById("player").innerHTML=""; }
 
     function showToast(n){
       const t=document.getElementById("toast");

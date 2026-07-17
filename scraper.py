@@ -41,6 +41,7 @@ def norm(m):
         "overview": m.get("overview",""),
         "link": TG,
         "trailer": trailer(mid),
+        "tmdb_id": mid,
     }
 
 all_m = {}
