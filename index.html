@@ -252,29 +252,26 @@
     }
     function closeModal(){ document.getElementById("modal").classList.remove("show"); }
 
-    // PLAYER (embed) — configurable sources, fallback to trailer
+    // PLAYER — open embed in NEW TAB (bypasses X-Frame-Options block)
     const EMBED_BASES = [
-      "https://vidsrc.icu/embed/movie/",   // free embed (tmdb id)
-      "https://www.2embed.to/embed/movie/",
+      "https://vidsrc.to/embed/movie/",
+      "https://vidlink.pro/movie/",
+      "https://vidsrc.icu/embed/movie/",
     ];
     function playMovie(m){
       openAds();
-      const p = document.getElementById("player");
-      const src = (m.tmdb_id && EMBED_BASES[0]) ? EMBED_BASES[0]+m.tmdb_id : (m.trailer||"");
-      if(src.includes("youtu")){
-        p.innerHTML = `<iframe src="${src}" allow="autoplay;encrypted-media" allowfullscreen></iframe>`;
-      } else if(m.tmdb_id){
-        // try embeds in order
-        p.innerHTML = EMBED_BASES.map(b=>`<iframe src="${b}${m.tmdb_id}" allow="autoplay;encrypted-media" allowfullscreen style="display:none"></iframe>`).join("")+
-          `<div id="embmsg" style="color:#fff;padding:20px;text-align:center">Loading player...</div>`;
-        // show first working iframe
-        const frames = p.querySelectorAll("iframe");
-        frames[0].style.display="block";
+      if(!m.tmdb_id){ window.open(getLink(m.title), "_blank"); return; }
+      // open first working embed in new tab (iframe-in-modal is blocked by X-Frame-Options)
+      const url = EMBED_BASES[0] + m.tmdb_id;
+      const w = window.open(url, "_blank", "noopener");
+      if(!w){ // popup blocked -> show links in modal
+        const p = document.getElementById("player");
+        p.innerHTML = EMBED_BASES.map(b=>`<a href="${b}${m.tmdb_id}" target="_blank" style="display:block;color:#fff;padding:10px">▶ Open player: ${b}</a>`).join("<br>");
+        document.getElementById("p-dl").href = getLink(m.title);
+        document.getElementById("playmodal").classList.add("show");
       } else {
-        p.innerHTML = `<div style="color:#fff;padding:30px;text-align:center">Play unavailable.<br><a href="${getLink(m.title)}" target="_blank" style="color:var(--tg)">Download via Telegram</a></div>`;
+        showToast(m.title + " — opening player in new tab");
       }
-      document.getElementById("p-dl").href = getLink(m.title);
-      document.getElementById("playmodal").classList.add("show");
     }
     function closePlay(){ document.getElementById("playmodal").classList.remove("show"); document.getElementById("player").innerHTML=""; }
 
