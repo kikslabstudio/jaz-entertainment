@@ -1,62 +1,72 @@
-#!/usr/bin/env python3
-"""
-KIKSLAB scraper -> movies.js generator
-Pulls real movie data from TMDB (your key) and writes window.SCRAPER_LINKS
-in the exact format index.html expects.
+import requests, json, re
+from bs4 import BeautifulSoup
 
-Default download link = Telegram (@KiksLabMovies).
-To use your own host: edit DOWNLOAD_MAP below or point HOST_BASE.
+BASE_URL = "https://mlfbd.com"
+IMDB_API_URL = "https://graph.imdbapi.dev/v1/movie/search?q="
 
-Run:  python scraper.py
-Output: movies.js  (drop next to index.html, already referenced)
-"""
-import json, urllib.request, urllib.parse, time
+def get_all_post_links():
+    urls = [BASE_URL]
+    categories = [
+        "hollywood", "web-series", "dual-audio", "hindi-dubbed", "netflix", "action", "sci-fi"
+    ]
+    urls += [f"{BASE_URL}/category/{cat}/" for cat in categories]
 
-TMDB_KEY = "029922d0ce729264a5fcd6f7403ec732"
-TG = "https://t.me/KiksLabMovies"
+    post_links = set()
+    for url in urls:
+        res = requests.get(url)
+        soup = BeautifulSoup(res.text, 'html.parser')
+        for a in soup.select("h2.entry-title > a"):
+            post_links.add(a['href'])
+    return list(post_links)
 
-# If you have your own download host pattern, set here:
-# e.g. HOST_BASE = "https://your-host.com/d/"  -> link = HOST_BASE + slug
-HOST_BASE = None
-
-CATEGORIES = {
-    "trending": f"https://api.themoviedb.org/3/trending/movie/day?api_key={TMDB_KEY}",
-    "popular":  f"https://api.themoviedb.org/3/movie/popular?api_key={TMDB_KEY}",
-    "new":      f"https://api.themoviedb.org/3/movie/now_playing?api_key={TMDB_KEY}",
-    "anime":    f"https://api.themoviedb.org/3/discover/movie?api_key={TMDB_KEY}&with_genres=16&with_origin_country=JP&sort_by=popularity.desc",
-    "search_sample": f"https://api.themoviedb.org/3/search/movie?api_key={TMDB_KEY}&query=Avengers",
-}
-
-def fetch(url):
+def scrape_movie_details(post_url):
     try:
-        with urllib.request.urlopen(url, timeout=15) as r:
-            return json.load(r).get("results", [])
+        res = requests.get(post_url, timeout=10)
+        soup = BeautifulSoup(res.text, 'html.parser')
+        title_tag = soup.find("h1", class_="entry-title")
+        title = title_tag.text.strip() if title_tag else "Unknown"
+
+        video = soup.find("iframe")
+        video_play = video['src'] if video else ""
+
+        links = soup.find_all("a", href=True)
+        download_link = ""
+        for link in links:
+            if any(x in link.text.lower() for x in ['download', '480p', '720p', '1080p']):
+                download_link = link['href']
+                break
+
+        imdb_res = requests.get(IMDB_API_URL + title)
+        imdb_data = imdb_res.json()
+        movie_data = imdb_data['results'][0] if imdb_data.get("results") else {}
+
+        return {
+            "title": title,
+            "poster": movie_data.get("image", ""),
+            "rating": movie_data.get("rating", 0),
+            "release_date": movie_data.get("year", ""),
+            "genres": movie_data.get("genreList", []),
+            "video_play": video_play,
+            "download_link": download_link
+        }
+
     except Exception as e:
-        print("fetch err:", e)
-        return []
+        print(f"❌ Error: {post_url} -> {e}")
+        return None
 
-def slug(t):
-    return urllib.parse.quote(t.lower().replace(" ", "-"))
+# Main logic
+print("🔍 Scraping MLFBD + IMDb...")
+posts = get_all_post_links()[:15]  # Limit to 15 for safety
+movies = []
 
-def main():
-    links = {}
-    seen = set()
-    for cat, url in CATEGORIES.items():
-        for m in fetch(url):
-            title = m.get("title") or m.get("name")
-            if not title or title in seen:
-                continue
-            seen.add(title)
-            # download link: your host if set, else Telegram
-            link = (HOST_BASE + slug(title)) if HOST_BASE else TG
-            links[title] = link
-        time.sleep(0.3)
+for post_url in posts:
+    print(f"🎬 {post_url}")
+    data = scrape_movie_details(post_url)
+    if data:
+        movies.append(data)
 
-    out = "window.SCRAPER_LINKS = " + json.dumps(links, ensure_ascii=False, indent=2) + ";\n"
-    with open("movies.js", "w", encoding="utf-8") as f:
-        f.write(out)
-    print(f"✅ movies.js written with {len(links)} movies.")
-    print("   Default link = Telegram. Set HOST_BASE to use your own host.")
+# Save to movies.json
+with open("movies.json", "w", encoding="utf-8") as f:
+    json.dump(movies, f, indent=2, ensure_ascii=False)
 
-if __name__ == "__main__":
-    main()
+print("✅ movies.json updated successfully.")
