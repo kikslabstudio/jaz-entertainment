@@ -1,0 +1,71 @@
+============================================================
+TELEGRAM BOT — FB Comment -> Telegram Link Auto-Reply
+============================================================
+This bot replies to users who comment on your FB post with the Telegram link.
+Two modes:
+  A) Manual helper  — prints reply text you copy-paste (safe, no FB token)
+  B) Auto mode      — listens to FB comments via Graph API + replies (needs token)
+
+------------------------------------------------------------
+SETUP
+------------------------------------------------------------
+1. Create bot: open Telegram, message @BotFather
+   /newbot  -> name "KiksLab Bot" -> username "KiksLabBot"
+   Copy the BOT_TOKEN (looks like 123456:ABC-DEF...)
+
+2. Get your chat_id (where bot sends logs):
+   message @userinfobot -> it replies your id
+
+3. Install: pip install python-telegram-bot requests
+
+------------------------------------------------------------
+telegram_bot.py  (auto-reply helper + broadcaster)
+------------------------------------------------------------
+Save this file next to index.html, fill BOT_TOKEN + CHAT_ID.
+
+from telegram import Bot
+import asyncio, json
+
+BOT_TOKEN = "PASTE_YOUR_BOT_TOKEN"
+CHAT_ID   = "PASTE_YOUR_CHAT_ID"   # your TG id (from @userinfobot)
+CHANNEL   = "@KiksLabMovies"        # public channel to broadcast
+
+LINK_TEXT = ("🎬 Free link ready! Join our Telegram:\n"
+             "👉 https://t.me/KiksLabMovies\n"
+             "Daily HD movies, no spam. 🔥")
+
+async def broadcast(text=LINK_TEXT):
+    bot = Bot(BOT_TOKEN)
+    await bot.send_message(chat_id=CHANNEL, text=text)
+    print("Posted to channel.")
+
+async def dm_user(user_id, text=LINK_TEXT):
+    bot = Bot(BOT_TOKEN)
+    await bot.send_message(chat_id=user_id, text=text)
+    print(f"Sent DM to {user_id}")
+
+if __name__ == "__main__":
+    # Broadcast the link to channel (call after each FB post)
+    asyncio.run(broadcast())
+
+------------------------------------------------------------
+FB COMMENT AUTO-REPLY (optional, advanced)
+------------------------------------------------------------
+FB Graph API can read comments on your page posts. Install:
+  pip install facebook-sdk
+
+Then a cron/script reads new comments and DMs the TG link via bot.
+(You can also do this manually — reply to each comment by hand.
+For 71k followers with steady comments, manual first 3 days is fine,
+then automate with the script above.)
+
+------------------------------------------------------------
+HOW TRAFFIC FLOWS
+------------------------------------------------------------
+FB Post (poster + "Comment GET")
+   -> user comments
+   -> you/bot replies: "Join t.me/KiksLabMovies"
+   -> user opens Telegram
+   -> Telegram -> bridge site (kikslab-bridge)
+   -> ads show + CPA button + movie grid (download = TG)
+   -> you earn (Monetag/Adsterra popunder + Advertica CPA)

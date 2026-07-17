@@ -1,0 +1,80 @@
+============================================================
+KIKSLAB $300 / 13-DAY CPA FUNNEL — AD CODE SNIPPETS
+============================================================
+Copy each block into the marked spot in index.html (comments show where).
+Publisher accounts must be created FIRST (free, instant approve):
+  Monetag  → https://monetag.com  (publisher signup)
+  Adsterra → https://adsterra.com (publisher signup)
+  Advertica→ https://advertica.com (publisher signup — needs ~1k/mo traffic)
+
+------------------------------------------------------------
+1) ADSTERRA — POPUNDER (highest earner, place in <head>)
+------------------------------------------------------------
+Replace YOUR_IDZONE with your Adsterra popunder zone id.
+Paste BEFORE </head>:
+
+<script type="text/javascript">
+    atOptions = {
+        'key' : 'YOUR_ADSTERRA_KEY',
+        'format' : 'iframe',
+        'height' : 60,
+        'width' : 468,
+        'params' : {}
+    };
+</script>
+<script type="text/javascript" src="//www.highperformanceformat.com/YOUR_ADSTERRA_KEY/invoke.js"></script>
+
+------------------------------------------------------------
+2) ADSTERRA — NATIVE BANNER (fills #adsterra-native div)
+------------------------------------------------------------
+Replace YOUR_NATIVE_ID with your native/display zone id.
+Paste the Adsterra native code block where the comment says
+"ADSTERRA NATIVE BANNER (auto-fills)".
+
+------------------------------------------------------------
+3) MONETAG — PUSH NOTIFICATION (place in <head>)
+------------------------------------------------------------
+Replace YOUR_PUSH_ID with your Monetag push campaign id.
+Paste BEFORE </head>:
+
+<script src="https://api.monetag.com/v1/YOUR_PUSH_ID.js" data-cfasync="false"></script>
+
+------------------------------------------------------------
+4) MONETAG — POPUNDER / DIRECT LINK (bottom of body)
+------------------------------------------------------------
+Paste Monetag popunder / interstitial code just above </body>.
+(Get the exact snippet from your Monetag dashboard "Websites > Tags".)
+
+------------------------------------------------------------
+5) ADVERTICA — CPA OFFER WIDGET (main income)
+------------------------------------------------------------
+Advertica is CPA (pay per action), best for BD audience:
+  - Gaming app install offers ($0.30–1.5)
+  - Finance/loan signup offers ($1–3)
+  - Sweepstake/giveaway leads ($0.50–2)
+
+After approval, grab an "Offer > Get Code" smartlink/widget and
+embed in a new <div id="advertica-offer"> section above the
+movie grid. Example placeholder:
+
+<div id="advertica-offer">
+  <!-- Paste Advertica smartlink / widget code here -->
+</div>
+
+------------------------------------------------------------
+TARGET MATH (BD traffic, tier-3)
+------------------------------------------------------------
+- CPM ads (Monetag+Adsterra) @ $1 CPM → $1 per 1,000 pageviews
+- CPA offers @ ~$1/action → need 15–25 actions/day for $15–25
+- 71k followers × 3% reach × 4% CTR = ~85 clicks/post
+- 3 posts/day = ~255 clicks/day → enough for both CPM + CPA
+- GOAL: $300 / 13d = ~$23/day = mix of ads + 15–25 CPA actions
+
+------------------------------------------------------------
+SAFETY RULES (protect the 71k page)
+------------------------------------------------------------
+1. NEVER post direct movie/pirated link on Facebook.
+2. FB post = poster + "comment GET" → bot sends Telegram link.
+3. Telegram → bridge site → ads + CPA offer.
+4. Keep bridge site clean (no auto-redirect to copyrighted file).
+5. Rotate 2-3 post formats; if reach drops, pause 1 day.

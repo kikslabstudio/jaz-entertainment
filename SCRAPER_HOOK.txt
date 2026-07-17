@@ -1,0 +1,55 @@
+============================================================
+SCRAPER INTEGRATION — matches your existing site
+============================================================
+Your original site fetched download links from a scraper source
+(/movies.json or local API like http://10.16.100.244/api/movies).
+
+The new index.html supports BOTH:
+
+------------------------------------------------------------
+OPTION 1: movies.js (recommended, no server needed)
+------------------------------------------------------------
+Create movies.js next to index.html:
+
+  window.SCRAPER_LINKS = {
+    "The Odyssey": "https://your-download-host/odyssey",
+    "Backrooms":   "https://your-download-host/backrooms",
+    "Spider-Man: Brand New Day": "https://t.me/KiksLabMovies"
+  };
+
+Load it in index.html BEFORE the main <script>:
+  <script src="movies.js"></script>
+
+When a movie's title matches a key, its Download button uses that
+link. Otherwise it falls back to Telegram (@KiksLabMovies).
+
+------------------------------------------------------------
+OPTION 2: your existing scraper API
+------------------------------------------------------------
+Replace the getLink() function in index.html with a fetch to your
+source, e.g.:
+
+  async function loadLinks(){
+    const j = await fetch("/movies.json").then(r=>r.json());
+    Object.assign(SCRAPER_LINKS, j);
+  }
+  loadLinks();
+
+Point it at /movies.json or your local API. Format: {"Title": "url"}.
+
+------------------------------------------------------------
+WHAT YOUR SCRAPER SHOULD OUTPUT
+------------------------------------------------------------
+Map of  movie_title  ->  download_url
+Title must MATCH TMDB title exactly (case-insensitive match added).
+
+Keep download_url = Telegram link OR your own host.
+If you host the actual movie file on Netlify -> DMCA deletes site.
+Safe: host on Telegram / external / your own non-Netlify host.
+
+------------------------------------------------------------
+TMDB KEY (already in index.html)
+------------------------------------------------------------
+029922d0ce729264a5fcd6f7403ec732  (verified working, live data)
+Endpoints used: trending, popular, now_playing, discover(anime), search
+============================================================
