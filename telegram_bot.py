@@ -7,7 +7,7 @@ Needs: pip install python-telegram-bot
 import asyncio
 from telegram import Bot
 
-BOT_TOKEN = "PASTE_YOUR_BOT_TOKEN_HERE"   # from @BotFather
+BOT_TOKEN = "8821668549:AAHdwubrLTKF1ZsRx46Z9oGpdHyczcsH3Ak"   # from @BotFather
 CHANNEL   = "@KiksLabMovies"               # public channel
 LINK_TEXT = ("🎬 Free movie link ready!\n"
              "👉 https://t.me/KiksLabMovies\n"
