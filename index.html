@@ -260,18 +260,10 @@
     ];
     function playMovie(m){
       openAds();
-      if(!m.tmdb_id){ window.open(getLink(m.title), "_blank"); return; }
-      // open first working embed in new tab (iframe-in-modal is blocked by X-Frame-Options)
+      if(!m.tmdb_id){ window.location.href = getLink(m.title); return; }
+      // redirect to embed player page (no X-Frame block, plays directly)
       const url = EMBED_BASES[0] + m.tmdb_id;
-      const w = window.open(url, "_blank", "noopener");
-      if(!w){ // popup blocked -> show links in modal
-        const p = document.getElementById("player");
-        p.innerHTML = EMBED_BASES.map(b=>`<a href="${b}${m.tmdb_id}" target="_blank" style="display:block;color:#fff;padding:10px">▶ Open player: ${b}</a>`).join("<br>");
-        document.getElementById("p-dl").href = getLink(m.title);
-        document.getElementById("playmodal").classList.add("show");
-      } else {
-        showToast(m.title + " — opening player in new tab");
-      }
+      window.location.href = url;
     }
     function closePlay(){ document.getElementById("playmodal").classList.remove("show"); document.getElementById("player").innerHTML=""; }
 
