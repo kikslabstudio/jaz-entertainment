@@ -20,6 +20,10 @@ jobs:
         run: python scraper.py
       - name: Generate category pages (SEO)
         run: python gen_pages.py
+      - name: Post new movies to Telegram
+        env:
+          TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
+        run: pip install python-telegram-bot && python telegram_bot.py 5
       - name: Commit movies.js + category pages
         run: |
           git config user.name "github-actions[bot]"
