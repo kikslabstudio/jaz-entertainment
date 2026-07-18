@@ -61,11 +61,7 @@ function searchPick(id){
 document.addEventListener("click", e=>{ if(!e.target.closest(".search-wrap") && !e.target.closest("#sdrop")) SD.classList.remove("show"); });
 
 // ===== BUILD UI =====
-buildRows();
-setHero();
-setInterval(()=>{ hi++; setHero(); }, 6000);
-
-// HERO
+// HERO — must define BEFORE setHero() call
 let heroList = SM.filter(m=>m._sec==="trending");
 if(!heroList.length) heroList = SM.slice(0,20);
 let hi = 0;
@@ -82,6 +78,9 @@ function setHero(){
   document.getElementById("h-dl").href = getLink(m.title);
   document.getElementById("h-info").onclick = ()=>openModal(m);
 }
+buildRows();
+setHero();
+setInterval(()=>{ hi++; setHero(); }, 6000);
 
 // ROWS
 function buildRows(){
