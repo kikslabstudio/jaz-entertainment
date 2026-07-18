@@ -101,11 +101,47 @@ async def post_random(limit=10):
             print("ERR", m.get("title"), e)
     print(f"✅ Posted {count} random movie(s) to {CHANNEL}")
 
+async def post_recent(limit=20):
+    """Post movies from the last ~30 days (year matches 2026, from recent sections)"""
+    movies = load_movies()
+    bot = Bot(BOT_TOKEN)
+    seen_ids = set()
+    recent = []
+    recent_secs = {"trending","new","popular","now_playing","upcoming","top_rated"}
+    for m in movies:
+        tid = m.get("tmdb_id")
+        sec = m.get("_sec","")
+        year = m.get("year","")
+        if tid in seen_ids: continue
+        # Filter: current year + recent sections
+        if year == "2026" and sec in recent_secs:
+            seen_ids.add(tid)
+            recent.append(m)
+    random.shuffle(recent)
+    count = 0
+    for m in recent[:limit]:
+        text, poster = msg_for(m)
+        try:
+            if poster:
+                await bot.send_photo(chat_id=CHANNEL, photo=poster, caption=text, parse_mode="HTML")
+            else:
+                await bot.send_message(chat_id=CHANNEL, text=text, parse_mode="HTML")
+            count += 1
+            await asyncio.sleep(1.5)
+        except Exception as e:
+            print("ERR", m.get("title"), e)
+            break
+    print(f"✅ Posted {count} recent movie(s) to {CHANNEL}")
+
 if __name__ == "__main__":
     if "--random" in sys.argv:
         idx = sys.argv.index("--random")
         lim = int(sys.argv[idx+1]) if idx+1 < len(sys.argv) and sys.argv[idx+1].isdigit() else 10
         asyncio.run(post_random(limit=lim))
+    elif "--recent" in sys.argv:
+        idx = sys.argv.index("--recent")
+        lim = int(sys.argv[idx+1]) if idx+1 < len(sys.argv) and sys.argv[idx+1].isdigit() else 20
+        asyncio.run(post_recent(limit=lim))
     else:
         all_mode = "--all" in sys.argv
         lim = 5
