@@ -61,7 +61,9 @@
     /* ROWS */
     .row{margin:0 4% 3%;position:relative}
     .row h2{font-size:20px;font-weight:700;margin-bottom:12px;color:#e5e5e5}
-    .shelf{display:flex;gap:8px;overflow-x:auto;padding:4px 0;scroll-behavior:smooth}
+    .filters{display:flex;gap:8px;overflow-x:auto;padding:12px 4%;background:#0b0b0b;border-bottom:1px solid #1a1a1a}
+    .filters button{background:#1a1a1a;color:#ccc;border:1px solid #333;border-radius:20px;padding:7px 14px;font-size:13px;white-space:nowrap;cursor:pointer}
+    .filters button:hover{background:#e50914;color:#fff;border-color:#e50914}
     .shelf::-webkit-scrollbar{height:0}
     .tile{flex:0 0 auto;width:190px;height:270px;border-radius:5px;background:#222;background-size:cover;background-position:center;position:relative;transition:transform .3s,box-shadow .3s;cursor:pointer;overflow:hidden}
     .tile:hover{transform:scale(1.12);box-shadow:0 10px 30px rgba(0,0,0,.8);z-index:5}
@@ -126,6 +128,8 @@
 
   <div id="rows"></div>
 
+  <div class="filters" id="genrefilters"></div>
+
   <div class="toast" id="toast">Opening...</div>
   <a class="float-tg" href="https://t.me/KiksLabMovies" target="_blank" title="Telegram">📩</a>
 
@@ -177,6 +181,23 @@
       {key:"south", title:"🌏 South Hindi Dubbed"},
       {key:"tollywood", title:"🔥 Tollywood"},
       {key:"hollywood", title:"🎬 Hollywood"},
+      {key:"bangla", title:"🇧🇩 Bangla Dubbed"},
+      {key:"action", title:"💥 Action"},
+      {key:"comedy", title:"😂 Comedy"},
+      {key:"crime", title:"🔫 Crime"},
+      {key:"drama", title:"🎭 Drama"},
+      {key:"horror", title:"👻 Horror"},
+      {key:"romance", title:"💕 Romance"},
+      {key:"scifi", title:"🚀 Sci-Fi"},
+      {key:"thriller", title:"😱 Thriller"},
+      {key:"fantasy", title:"🧙 Fantasy"},
+      {key:"mystery", title:"🔍 Mystery"},
+      {key:"adventure", title:"🗺️ Adventure"},
+      {key:"animation", title:"🎨 Animation"},
+      {key:"family", title:"👨‍👩‍👧 Family"},
+      {key:"history", title:"📜 History"},
+      {key:"war", title:"⚔️ War"},
+      {key:"music", title:"🎵 Music"},
       {key:"anime", title:"🌸 Anime"},
       {key:"new", title:"🆕 New Releases"},
     ];
@@ -205,32 +226,43 @@
 
     // ROWS (Netflix-style shelves)
     function buildRows(){
-      const c = document.getElementById("rows");
-      c.innerHTML = "";
+      const rows = document.getElementById("rows");
+      rows.innerHTML = "";
       ROWS.forEach(r=>{
-        let list = SM.filter(m=>m._sec===r.key);
+        const list = SM.filter(m=>m._sec===r.key);
         if(!list.length) return;
-        const row = document.createElement("div");
-        row.className = "row";
-        row.innerHTML = `<h2>${r.title}</h2><div class="arrow l" onclick="scrollRow(this,-1)">‹</div><div class="arrow r" onclick="scrollRow(this,1)">›</div><div class="shelf"></div>`;
-        const shelf = row.querySelector(".shelf");
-        list.slice(0,20).forEach(m=>{
-          const tile = document.createElement("div");
-          tile.className = "tile";
-          tile.style.backgroundImage = `url('${m.poster}')`;
-          tile.innerHTML = `<span class="rate">★ ${m.rating?m.rating.toFixed(1):'?'}</span>
-            <div class="tinfo"><b>${m.title}</b><small>${m.year||'—'} • HD</small></div>
-            <div class="dl" onclick="event.stopPropagation();openAds();showToast('${m.title.replace(/'/g,'')}')">⬇</div>`;
-          // 1st click = ad, 2nd = modal
-          let clk=false;
-          tile.addEventListener("click", ()=>{
-            if(!clk){ clk=true; openAds(); showToast(m.title+" — ad loaded, click again"); tile.style.outline="3px solid var(--accent)"; setTimeout(()=>{clk=false;tile.style.outline=""},4000); }
-            else openModal(m);
-          });
-          shelf.appendChild(tile);
-        });
-        c.appendChild(row);
+        const sec = document.createElement("section");
+        sec.className = "row";
+        sec.innerHTML = `<h2 class="sec-title">${r.title}</h2>
+          <div class="shelf">${list.map(tile).join("")}</div>`;
+        rows.appendChild(sec);
       });
+      // genre filter bar
+      const gf = document.getElementById("genrefilters");
+      gf.innerHTML = ROWS.map(r=>`<button onclick="jumpTo('${r.key}')">${r.title}</button>`).join("");
+    }
+    function jumpTo(key){
+      const secs = document.querySelectorAll(".row");
+      // find section whose title matches
+      const map = {};
+      ROWS.forEach((r,i)=>map[r.key]=i);
+      const idx = map[key];
+      const target = document.querySelectorAll(".row")[idx];
+      if(target) target.scrollIntoView({behavior:"smooth"});
+    }
+    function tile(m){
+      const t = document.createElement("div");
+      t.className = "tile";
+      t.style.backgroundImage = `url('${m.poster}')`;
+      t.innerHTML = `<span class="rate">★ ${m.rating?m.rating.toFixed(1):'?'}</span>
+        <div class="tinfo"><b>${m.title}</b><small>${m.year||'—'} • HD</small></div>
+        <div class="dl" onclick="event.stopPropagation();openAds();showToast('${m.title.replace(/'/g,'')}')">⬇</div>`;
+      let clk=false;
+      t.addEventListener("click", ()=>{
+        if(!clk){ clk=true; openAds(); showToast(m.title+" — ad loaded, click again"); t.style.outline="3px solid var(--accent)"; setTimeout(()=>{clk=false;t.style.outline="";},4000); }
+        else openModal(m);
+      });
+      return t;
     }
     buildRows();
 

@@ -12,15 +12,34 @@ def api(path):
     except Exception as e:
         print("ERR", path, e); return {}
 
-# Better than mlfbd: multi-language + trailer + related
+# Better than mlfbd: multi-language + genre + trailer
+G = lambda gid: f"/discover/movie?api_key={KEY}&with_genres={gid}&sort_by=popularity.desc"
 SECTIONS = {
     "trending":   f"/trending/movie/day?api_key={KEY}",
     "bollywood":  f"/discover/movie?api_key={KEY}&region=IN&with_original_language=hi&sort_by=popularity.desc",
     "south":      f"/discover/movie?api_key={KEY}&region=IN&with_original_language=ta&sort_by=popularity.desc",
     "tollywood":  f"/discover/movie?api_key={KEY}&region=IN&with_original_language=te&sort_by=popularity.desc",
     "hollywood":  f"/movie/popular?api_key={KEY}",
+    "bangla":     f"/discover/movie?api_key={KEY}&with_original_language=bn&sort_by=popularity.desc",
     "anime":      f"/discover/movie?api_key={KEY}&with_genres=16&with_origin_country=JP&sort_by=popularity.desc",
     "new":        f"/movie/now_playing?api_key={KEY}",
+    "action":     G(28),
+    "comedy":     G(35),
+    "crime":      G(80),
+    "drama":      G(18),
+    "horror":     G(27),
+    "romance":    G(10749),
+    "scifi":      G(878),
+    "thriller":   G(53),
+    "fantasy":    G(14),
+    "mystery":    G(9648),
+    "adventure":  G(12),
+    "animation":  G(16),
+    "family":     G(10751),
+    "history":    G(36),
+    "war":        G(10752),
+    "music":      G(10402),
+    "documentary":G(99),
 }
 
 def trailer(mid):
