@@ -117,8 +117,9 @@
       <div class="meta"><span class="rate" id="h-rate">★ —</span><span id="h-year">—</span><span id="h-genre">—</span></div>
       <p id="h-overview">—</p>
       <div class="hbtns">
-        <div class="hbtn play" id="h-play">▶ Play Trailer</div>
+        <div class="hbtn play" id="h-play">▶ Play</div>
         <div class="hbtn info" id="h-info">ⓘ More Info</div>
+        <a class="hbtn info" id="h-dl" href="#" target="_blank" rel="noopener" onclick="openAds()">⬇ Download</a>
       </div>
     </div>
   </section>
@@ -148,7 +149,7 @@
         <div class="meta" id="m-meta"></div>
         <p id="m-overview"></p>
         <div class="fbtns">
-          <div class="hbtn play" id="m-play" onclick="playMovie(currentMovie)">▶ Play Movie</div>
+          <div class="hbtn play" id="m-play" onclick="openPlayer(currentMovie)">▶ Play Movie</div>
           <a class="hbtn info" id="m-dl" href="#" target="_blank" rel="noopener" onclick="openAds()">⬇ Download HD</a>
           <a class="hbtn info" href="https://t.me/KiksLabMovies" target="_blank" rel="noopener">📩 Telegram</a>
           <a class="hbtn" id="m-trailer" href="#" target="_blank" rel="noopener" style="background:#e50914;display:none">▶ Trailer</a>
@@ -195,7 +196,8 @@
       document.getElementById("h-rate").textContent = "★ " + (m.rating?m.rating.toFixed(1):'—');
       document.getElementById("h-year").textContent = m.year||'—';
       document.getElementById("h-overview").textContent = m.overview||"";
-      document.getElementById("h-play").onclick = ()=>{ playMovie(m); };
+      document.getElementById("h-play").onclick = ()=>{ openPlayer(m); };
+      document.getElementById("h-dl").href = getLink(m.title);
       document.getElementById("h-info").onclick = ()=>openModal(m);
     }
     setHero();
@@ -252,19 +254,25 @@
     }
     function closeModal(){ document.getElementById("modal").classList.remove("show"); }
 
-    // PLAYER — open embed in NEW TAB (bypasses X-Frame-Options block)
-    const EMBED_BASES = [
-      "https://vidsrc.to/embed/movie/",
-      "https://vidlink.pro/movie/",
-      "https://vidsrc.icu/embed/movie/",
+    // PLAYER — multiple servers (Server 1-6), first working plays
+    const SERVERS = [
+      {n:"Server 1", base:"https://vidsrc.to/embed/movie/"},
+      {n:"Server 2", base:"https://vidlink.pro/movie/"},
+      {n:"Server 3", base:"https://www.2embed.to/embed/movie/"},
+      {n:"Server 4", base:"https://vidsrc.icu/embed/movie/"},
+      {n:"Server 5", base:"https://moviesapi.to/movie/"},
+      {n:"Server 6", base:"https://embed.smashy.stream/movie/"},
     ];
-    function playMovie(m){
+    function openPlayer(m){
       openAds();
       if(!m.tmdb_id){ window.location.href = getLink(m.title); return; }
-      // redirect to embed player page (no X-Frame block, plays directly)
-      const url = EMBED_BASES[0] + m.tmdb_id;
-      window.location.href = url;
+      const p = document.getElementById("player");
+      p.innerHTML = `<div style="padding:16px"><div style="color:#fff;font-weight:700;margin-bottom:12px">🎬 ${m.title} — Select Server:</div>` +
+        SERVERS.map((s,i)=>`<button class="srvbtn" onclick="goServer('${s.base}${m.tmdb_id}')" style="display:block;width:100%;margin:6px 0;padding:12px;background:#222;color:#fff;border:1px solid #444;border-radius:6px;cursor:pointer;font-size:15px">▶ ${s.n}</button>`).join("") +
+        `<a href="${getLink(m.title)}" target="_blank" style="display:block;width:100%;margin:6px 0;padding:12px;background:#e50914;color:#fff;text-align:center;border-radius:6px;font-weight:700">⬇ Download HD</a></div>`;
+      document.getElementById("playmodal").classList.add("show");
     }
+    function goServer(url){ window.location.href = url; }
     function closePlay(){ document.getElementById("playmodal").classList.remove("show"); document.getElementById("player").innerHTML=""; }
 
     function showToast(n){
