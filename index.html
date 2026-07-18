@@ -64,10 +64,13 @@
     .filters{display:flex;gap:8px;overflow-x:auto;padding:12px 4%;background:#0b0b0b;border-bottom:1px solid #1a1a1a}
     .filters button{background:#1a1a1a;color:#ccc;border:1px solid #333;border-radius:20px;padding:7px 14px;font-size:13px;white-space:nowrap;cursor:pointer}
     .filters button:hover{background:#e50914;color:#fff;border-color:#e50914}
+    .shelf{display:flex;overflow-x:auto;gap:12px;padding:8px 0;scroll-behavior:smooth;-ms-overflow-style:none;scrollbar-width:none}
     .shelf::-webkit-scrollbar{height:0}
+    .sec-title{cursor:pointer}
     .tile{flex:0 0 auto;width:190px;height:270px;border-radius:5px;background:#222;background-size:cover;background-position:center;position:relative;transition:transform .3s,box-shadow .3s;cursor:pointer;overflow:hidden}
     .tile:hover{transform:scale(1.12);box-shadow:0 10px 30px rgba(0,0,0,.8);z-index:5}
     .tile .tinfo{position:absolute;bottom:0;left:0;right:0;padding:10px;background:linear-gradient(0deg,rgba(0,0,0,.95),transparent);opacity:0;transition:opacity .3s}
+    .tileclick{position:absolute;inset:0;z-index:3;cursor:pointer}
     .tile:hover .tinfo{opacity:1}
     .tile .tinfo b{font-size:14px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     .tile .tinfo small{color:var(--muted);font-size:12px}
