@@ -1,9 +1,8 @@
-name: Scraper + Daily Posts
+name: Scraper Hourly
 
 on:
   schedule:
-    - cron: "0 * * * *"       # every hour — scrape new movies
-    - cron: "0 6,12,18 * * *" # 3x daily — post 10 random movies
+    - cron: "0 * * * *"
   workflow_dispatch:
 
 permissions:
@@ -11,7 +10,6 @@ permissions:
 
 jobs:
   scrape:
-    if: github.event_name == 'schedule' && github.event.schedule == '0 * * * *' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -25,24 +23,11 @@ jobs:
       - name: Generate category pages
         run: python gen_pages.py
       - name: Post new movies to Telegram
-        run: python telegram_bot.py 10
-      - name: Commit movies.js + category pages
+        run: python telegram_bot.py 5
+      - name: Commit + push
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add movies.js category sitemap.xml
-          git diff --cached --quiet || git commit -m "chore: update movies + category pages [skip ci]"
+          git diff --cached --quiet || git commit -m "chore: update movies [skip ci]"
           git push
-
-  daily_posts:
-    if: github.event_name == 'schedule' && github.event.schedule == '0 6,12,18 * * *'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-      - name: Install deps
-        run: pip install python-telegram-bot
-      - name: Post 10 random movies
-        run: python telegram_bot.py --random 10

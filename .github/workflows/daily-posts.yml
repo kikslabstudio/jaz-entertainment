@@ -1,0 +1,19 @@
+name: Daily Random Posts
+
+on:
+  schedule:
+    - cron: "0 6 * * *"   # daily 12pm BD time — 10 random movie posts
+  workflow_dispatch:
+
+jobs:
+  post:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install deps
+        run: pip install python-telegram-bot
+      - name: Post 10 random movies to Telegram
+        run: python telegram_bot.py --random 10
