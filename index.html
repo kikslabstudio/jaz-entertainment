@@ -251,18 +251,21 @@
       if(target) target.scrollIntoView({behavior:"smooth"});
     }
     function tile(m){
-      const t = document.createElement("div");
-      t.className = "tile";
-      t.style.backgroundImage = `url('${m.poster}')`;
-      t.innerHTML = `<span class="rate">★ ${m.rating?m.rating.toFixed(1):'?'}</span>
-        <div class="tinfo"><b>${m.title}</b><small>${m.year||'—'} • HD</small></div>
-        <div class="dl" onclick="event.stopPropagation();openAds();showToast('${m.title.replace(/'/g,'')}')">⬇</div>`;
-      let clk=false;
-      t.addEventListener("click", ()=>{
-        if(!clk){ clk=true; openAds(); showToast(m.title+" — ad loaded, click again"); t.style.outline="3px solid var(--accent)"; setTimeout(()=>{clk=false;t.style.outline="";},4000); }
-        else openModal(m);
-      });
-      return t;
+      const rate = m.rating?m.rating.toFixed(1):'?';
+      const ttl = (m.title||'').replace(/"/g,'&quot;').replace(/'/g,"");
+      return `<div class="tile" style="background-image:url('${m.poster}')">
+        <span class="rate">★ ${rate}</span>
+        <div class="tinfo"><b>${ttl}</b><small>${m.year||'—'} • HD</small></div>
+        <div class="dl" onclick="event.stopPropagation();openAds();showToast('${ttl}')">⬇</div>
+        <div class="tileclick" onclick="tileClick(event, ${m.tmdb_id})"></div>
+      </div>`;
+    }
+    // 1st click = ad, 2nd = modal
+    function tileClick(e, id){
+      if(e.target.closest('.dl')) return;
+      const m = SM.find(x=>x.tmdb_id===id) || {};
+      if(window._clk!==id){ window._clk=id; openAds(); showToast((m.title||'')+" — ad loaded, click again"); setTimeout(()=>{if(window._clk===id)window._clk=null;},4000); }
+      else { window._clk=null; openModal(m); }
     }
     buildRows();
 
