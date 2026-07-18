@@ -31,6 +31,17 @@ CATS = {
     "music":      ("Music Movies", "musical movies, music film"),
     "anime":      ("Anime & Series", "anime, web series, anime movie"),
     "new":        ("New Releases", "new movie releases 2026, upcoming movies"),
+    "popular":    ("Most Popular Movies", "popular movies, most watched movies, trending films"),
+    "top_rated":  ("Top Rated Movies", "top rated movies, best movies, highest rated films"),
+    "now_playing":("Now Playing Movies", "now playing, in theaters, current movies"),
+    "upcoming":   ("Upcoming Movies", "upcoming movies 2026, coming soon, new releases"),
+    "western":    ("Western Movies", "western movies, cowboy films, classic western"),
+    "documentary":("Documentary Movies", "documentary, non fiction, educational films"),
+    "tv_movie":   ("TV Movies", "tv movies, television film, made for tv"),
+    "korean":     ("Korean Movies", "korean movies, k drama film, south korean cinema"),
+    "japanese":   ("Japanese Movies", "japanese movies, japan film, anime live action"),
+    "chinese":    ("Chinese Movies", "chinese movies, china film, mandarin cinema"),
+    "russian":    ("Russian Movies", "russian movies, soviet film, russian cinema"),
 }
 
 SITE = "https://jaz-entertainment.netlify.app"

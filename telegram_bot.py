@@ -8,9 +8,7 @@ Needs: pip install python-telegram-bot
 import os, sys, json, re, asyncio
 from telegram import Bot
 
-BOT_TOKEN = os.environ.get("TG_BOT_TOKEN", "PASTE_TOKEN_HERE")  # from @BotFather -> set as GitHub secret TG_BOT_TOKEN
-if BOT_TOKEN == "PASTE_TOKEN_HERE":
-    print("⚠️  Set TG_BOT_TOKEN env var (GitHub secret) before running.")
+BOT_TOKEN = os.environ.get("TG_BOT_TOKEN") or "8821668549:AAHdwubrLTKF1ZsRx46Z9oGpdHyczcsH3Ak"  # @KikslabMoviesBot
 CHANNEL   = "@KiksLabMovies"
 SITE      = "https://jaz-entertainment.netlify.app"
 STATE_FILE = "posted.json"   # remembers which movies already posted
