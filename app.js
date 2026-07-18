@@ -31,8 +31,6 @@ const ROWS = [
 const SM = (window.SCRAPER_MOVIES) || [];
 let currentMovie = null;
 
-document.addEventListener("DOMContentLoaded", () => {
-
 // ===== SEARCH =====
 const SI = document.getElementById("sinput");
 const SD = document.getElementById("sdrop");
@@ -197,5 +195,3 @@ document.querySelectorAll('nav a[data-f]').forEach(a=>{
 window.addEventListener('scroll', ()=>{
   document.getElementById("hdr").style.background = window.scrollY>60 ? "#000" : "linear-gradient(180deg,rgba(0,0,0,.9),transparent)";
 });
-
-}); // DOMContentLoaded
