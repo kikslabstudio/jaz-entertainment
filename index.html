@@ -254,7 +254,7 @@
     }
     function closeModal(){ document.getElementById("modal").classList.remove("show"); }
 
-    // PLAYER — multiple servers (Server 1-6), first working plays
+    // PLAYER — multiple servers, AUTO-FALLBACK if one fails
     const SERVERS = [
       {n:"Server 1", base:"https://vidsrc.to/embed/movie/"},
       {n:"Server 2", base:"https://vidlink.pro/movie/"},
@@ -263,16 +263,42 @@
       {n:"Server 5", base:"https://moviesapi.to/movie/"},
       {n:"Server 6", base:"https://embed.smashy.stream/movie/"},
     ];
+    let _curM = null;
     function openPlayer(m){
       openAds();
+      _curM = m;
       if(!m.tmdb_id){ window.location.href = getLink(m.title); return; }
       const p = document.getElementById("player");
-      p.innerHTML = `<div style="padding:16px"><div style="color:#fff;font-weight:700;margin-bottom:12px">🎬 ${m.title} — Select Server:</div>` +
-        SERVERS.map((s,i)=>`<button class="srvbtn" onclick="goServer('${s.base}${m.tmdb_id}')" style="display:block;width:100%;margin:6px 0;padding:12px;background:#222;color:#fff;border:1px solid #444;border-radius:6px;cursor:pointer;font-size:15px">▶ ${s.n}</button>`).join("") +
-        `<a href="${getLink(m.title)}" target="_blank" style="display:block;width:100%;margin:6px 0;padding:12px;background:#e50914;color:#fff;text-align:center;border-radius:6px;font-weight:700">⬇ Download HD</a></div>`;
+      p.innerHTML = `<div style="padding:16px"><div style="color:#fff;font-weight:700;margin-bottom:8px">🎬 ${m.title}</div>
+        <div id="srv-list">` +
+        SERVERS.map((s,i)=>`<button class="srvbtn" onclick="goServer(${i})" style="display:block;width:100%;margin:6px 0;padding:12px;background:#222;color:#fff;border:1px solid #444;border-radius:6px;cursor:pointer;font-size:15px">▶ ${s.n}</button>`).join("") +
+        `</div><a href="${getLink(m.title)}" target="_blank" style="display:block;width:100%;margin:6px 0;padding:12px;background:#e50914;color:#fff;text-align:center;border-radius:6px;font-weight:700">⬇ Download HD</a></div>`;
       document.getElementById("playmodal").classList.add("show");
+      autoTry(0); // start with Server 1, auto-advance on fail
     }
-    function goServer(url){ window.location.href = url; }
+    function autoTry(i){
+      if(i>=SERVERS.length) return;
+      const m=_curM; if(!m) return;
+      const url = SERVERS[i].base + m.tmdb_id;
+      // open in new tab; watchdog: if user still here after 8s (popup blocked/failed), try next
+      const w = window.open(url, "_blank", "noopener");
+      if(!w){
+        // popup blocked -> show manual list, stop auto
+        return;
+      }
+      // schedule fallback: if modal still open (we didn't navigate away), advance
+      setTimeout(()=>{
+        const modalStill = document.getElementById("playmodal").classList.contains("show");
+        if(modalStill && _curM===m){
+          // assume this server failed -> try next
+          autoTry(i+1);
+        }
+      }, 8000);
+    }
+    function goServer(i){
+      const m=_curM; if(!m) return;
+      window.location.href = SERVERS[i].base + m.tmdb_id;
+    }
     function closePlay(){ document.getElementById("playmodal").classList.remove("show"); document.getElementById("player").innerHTML=""; }
 
     function showToast(n){
