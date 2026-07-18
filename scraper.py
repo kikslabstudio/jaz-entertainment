@@ -19,10 +19,10 @@ SECTIONS = {
     "bollywood":  f"/discover/movie?api_key={KEY}&region=IN&with_original_language=hi&sort_by=popularity.desc",
     "south":      f"/discover/movie?api_key={KEY}&region=IN&with_original_language=ta&sort_by=popularity.desc",
     "tollywood":  f"/discover/movie?api_key={KEY}&region=IN&with_original_language=te&sort_by=popularity.desc",
-    "hollywood":  f"/movie/popular?api_key={KEY}",
+    "hollywood":  f"/discover/movie?api_key={KEY}&with_original_language=en&sort_by=popularity.desc",
     "bangla":     f"/discover/movie?api_key={KEY}&with_original_language=bn&sort_by=popularity.desc",
     "anime":      f"/discover/movie?api_key={KEY}&with_genres=16&with_origin_country=JP&sort_by=popularity.desc",
-    "new":        f"/movie/now_playing?api_key={KEY}",
+    "new":        f"/trending/movie/week?api_key={KEY}",
     "action":     G(28),
     "comedy":     G(35),
     "crime":      G(80),
@@ -43,11 +43,7 @@ SECTIONS = {
 }
 
 def trailer(mid):
-    v = api(f"/movie/{mid}/videos?api_key={KEY}").get("results", [])
-    for x in v:
-        if x.get("site")=="YouTube" and x.get("type") in ("Trailer","Teaser"):
-            return f"https://youtu.be/{x['key']}"
-    return ""
+    return ""  # skip video API (slow); trailer not needed for SEO pages
 
 def norm(m):
     mid = m.get("id")
@@ -63,18 +59,12 @@ def norm(m):
         "tmdb_id": mid,
     }
 
-all_m = {}
+LIST = []
 for name, path in SECTIONS.items():
     for m in api(path).get("results", [])[:30]:
         nm = norm(m)
         nm["_sec"] = name
-        all_m[nm["title"]] = nm
-
-gmap = {g["id"]: g["name"] for g in api(f"/genre/movie/list?api_key={KEY}").get("genres",[])}
-for t, m in all_m.items():
-    m["genres"] = gmap
-
-LIST = list(all_m.values())
+        LIST.append(nm)  # keep per-section (a movie can appear in multiple rows)
 links = {m["title"]: TG for m in LIST}
 out = f"window.SCRAPER_LINKS = {json.dumps(links, ensure_ascii=False)};\n"
 out += f"window.SCRAPER_MOVIES = {json.dumps(LIST, ensure_ascii=False)};\n"
