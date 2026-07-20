@@ -4,6 +4,26 @@ TMDB = "https://api.themoviedb.org/3"
 KEY = "029922d0ce729264a5fcd6f7403ec732"
 TG = "https://t.me/KiksLabMovies"
 
+# trailer cache to avoid duplicate API calls
+_trailer_cache = {}
+
+def trailer(mid):
+    """Fetch YouTube trailer URL from TMDB videos endpoint"""
+    if mid in _trailer_cache:
+        return _trailer_cache[mid]
+    try:
+        data = api(f"/movie/{mid}/videos?language=en-US")
+        for v in data.get("results", []):
+            if v.get("type") == "Trailer" and v.get("site") == "YouTube":
+                url = f"https://www.youtube.com/watch?v={v['key']}"
+                _trailer_cache[mid] = url
+                return url
+        _trailer_cache[mid] = ""
+        return ""
+    except:
+        _trailer_cache[mid] = ""
+        return ""
+
 def api(path):
     try:
         with urllib.request.urlopen(f"{TMDB}{path}&api_key={KEY}", timeout=20) as r:
@@ -65,7 +85,7 @@ def norm(m, sec):
         "year": (m.get("release_date","")[:4]),
         "overview": m.get("overview",""),
         "link": TG,
-        "trailer": "",
+        "trailer": trailer(mid),
         "tmdb_id": mid,
         "_sec": sec,
     }

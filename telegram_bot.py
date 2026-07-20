@@ -27,12 +27,13 @@ def load_posted():
 def save_posted(s):
     json.dump(list(s), open(STATE_FILE, "w", encoding="utf-8"))
 
-def msg_for(m):
+def msg_for(m, fb_mode=False):
     title = m.get("title","")
     year = m.get("year","")
     rate = m.get("rating",0)
     sec = m.get("_sec","").upper()
     poster = m.get("poster","")
+    overview = m.get("overview","")
     cat_emoji = {
         "TRENDING":"🔥","NEW":"🆕","POPULAR":"⭐","TOP_RATED":"🏆",
         "BOLLYWOOD":"🇮🇳","SOUTH":"🌏","TOLLYWOOD":"🔥","HOLLYWOOD":"🎬",
@@ -41,12 +42,26 @@ def msg_for(m):
         "ANIME":"🌸","FANTASY":"🧙","FAMILY":"👨‍👩‍👧","ANIMATION":"🎨",
     }
     emoji = cat_emoji.get(sec,"🎬")
-    text = (
-        f"{emoji} <b>{title}</b> ({year})\n"
-        f"⭐ {rate:.1f}  •  {sec}\n\n"
-        f"▶ <a href='{SITE}/'>Watch / Download HD</a>\n"
-        f"📩 <a href='https://t.me/KiksLabMovies'>Join @KiksLabMovies</a>"
-    )
+
+    if fb_mode:
+        # FB-ready plain text (copy-paste friendly, no HTML)
+        short_overview = (overview[:120] + "..") if len(overview) > 120 else overview
+        text = (
+            f"{emoji} {title} ({year}) ⭐ {rate:.1f}\n"
+            f"━━━━━━━━━━━━━━━━━━\n"
+            f"{short_overview}\n\n"
+            f"🎬 Watch in HD: {SITE}/\n"
+            f"📩 Join TG: t.me/KiksLabMovies\n\n"
+            f"#MovieLovers #FreeMovies #HD #{sec.title()}"
+        )
+    else:
+        # TG format (HTML, rich)
+        text = (
+            f"{emoji} <b>{title}</b> ({year})\n"
+            f"⭐ {rate:.1f}  •  {sec}\n\n"
+            f"▶ <a href='{SITE}/'>Watch / Download HD</a>\n"
+            f"📩 <a href='https://t.me/KiksLabMovies'>Join @KiksLabMovies</a>"
+        )
     return text, poster
 
 async def post_new(limit=5, all_mode=False):
@@ -133,8 +148,49 @@ async def post_recent(limit=20):
             break
     print(f"✅ Posted {count} recent movie(s) to {CHANNEL}")
 
+async def post_fb(limit=5, all_mode=False, section=None):
+    """Post FB-ready format to Telegram channel"""
+    movies = load_movies()
+    if section:
+        secs = [s.strip().lower() for s in section.split(",")]
+        movies = [m for m in movies if m.get("_sec","").lower() in secs]
+        if not movies:
+            print(f"❌ No movies found for sections: {section}")
+            return
+    posted = set() if all_mode else load_posted()
+    bot = Bot(BOT_TOKEN)
+    count = 0
+    for m in reversed(movies):
+        key = f"fb:{m.get('tmdb_id')}:{m.get('_sec')}"
+        if key in posted:
+            continue
+        text, poster = msg_for(m, fb_mode=True)
+        try:
+            if poster:
+                await bot.send_photo(chat_id=CHANNEL, photo=poster, caption=text, parse_mode=None)
+            else:
+                await bot.send_message(chat_id=CHANNEL, text=text, parse_mode=None)
+            posted.add(key)
+            count += 1
+            if not all_mode and count >= limit:
+                break
+            await asyncio.sleep(0.5)
+        except Exception as e:
+            print("ERR", m.get("title"), e)
+            break
+    save_posted(posted)
+    print(f"✅ Posted {count} FB-ready movie post(s) to {CHANNEL}")
+
 if __name__ == "__main__":
-    if "--random" in sys.argv:
+    if "--fb" in sys.argv:
+        all_mode = "--all" in sys.argv
+        lim = 5
+        section = None
+        for a in sys.argv[1:]:
+            if a.isdigit(): lim = int(a)
+            if a.startswith("--section="): section = a.split("=",1)[1]
+        asyncio.run(post_fb(limit=lim, all_mode=all_mode, section=section))
+    elif "--random" in sys.argv:
         idx = sys.argv.index("--random")
         lim = int(sys.argv[idx+1]) if idx+1 < len(sys.argv) and sys.argv[idx+1].isdigit() else 10
         asyncio.run(post_random(limit=lim))
