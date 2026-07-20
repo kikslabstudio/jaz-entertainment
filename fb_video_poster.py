@@ -12,7 +12,7 @@ Requirements:
   - yt-dlp (pip install yt-dlp)
   - FB_PAGE_TOKEN environment variable OR edit TOKEN below
 """
-import os, sys, json, re, time, subprocess, glob, tempfile, shutil
+import os, sys, json, re, time, subprocess, glob, tempfile, shutil, urllib.request
 
 # ==== CONFIG ====
 TOKEN = "EAATuDAFdfY8BSGj5twzq9ycXxNV2nM6oHv9PZANw4zKiPoZAMol5dPgg1JDUvZBKEQNo0XF61m203OxD1ax4xar5eWsVlylGkUnvBEhccoQ4ZAVdLNc0iTHoAGZA2aiwDL9I9KkyDvdEfsin7C7VwsjYxQ4YObBR4q6UliYpRB31XMJ7kNHjyzH5GUzELlYOhmbhSzKmdi2XeE5Q7iRVmhFZB0jIql2s8wGVZASbZCdO"
@@ -26,7 +26,7 @@ os.makedirs(TEMP_DIR, exist_ok=True)
 # ==== HELPERS ====
 def load_movies():
     src = open(MOVIES_FILE, encoding="utf-8").read()
-    return json.loads(re.search(r"window\.SCRAPER_MOVIES = (.*?\])", src, re.S).group(1))
+    return json.loads(re.search(r"window\.SCRAPER_MOVIES = (.*?\]);", src, re.S).group(1))
 
 def load_posted():
     if os.path.exists(STATE_FILE):
@@ -50,14 +50,21 @@ def download_trailer(m):
         return out_path
     
     try:
-        subprocess.run(
-            ["python", "-m", "yt_dlp", "-f", "best[height<=720]", 
-             "-o", out_path, "--no-playlist", "--quiet", url],
-            timeout=120, check=True,
-            capture_output=True
+        result = subprocess.run(
+            [sys.executable, "-m", "yt_dlp", "-f", "best[height<=720]", 
+             "-o", out_path, "--no-playlist", url],
+            timeout=120, capture_output=True, text=True
         )
-        if os.path.exists(out_path) and os.path.getsize(out_path) > 50000:
+        if result.returncode == 0 and os.path.exists(out_path) and os.path.getsize(out_path) > 50000:
             return out_path
+        else:
+            # Try with best format if specific format fails
+            result2 = subprocess.run(
+                [sys.executable, "-m", "yt_dlp", "-o", out_path, "--no-playlist", url],
+                timeout=120, capture_output=True, text=True
+            )
+            if result2.returncode == 0 and os.path.exists(out_path) and os.path.getsize(out_path) > 50000:
+                return out_path
     except Exception as e:
         print(f"  ⚠️ Download failed: {e}")
     return None
@@ -68,28 +75,23 @@ def post_to_fb(video_path, caption):
     boundary = "----FormBoundary7MA4YWxkTrZu0gW"
     
     # Build multipart form
-    body = []
+    body = b""
     # Caption field
-    body.append(f"--{boundary}")
-    body.append('Content-Disposition: form-data; name="message"')
-    body.append("")
-    body.append(caption.encode("utf-8"))
+    body += f"--{boundary}\r\n".encode()
+    body += b'Content-Disposition: form-data; name="message"\r\n\r\n'
+    body += caption.encode("utf-8") + b"\r\n"
     
     # Video file
     with open(video_path, "rb") as f:
         vid_data = f.read()
-    body.append(f"--{boundary}")
-    body.append(f'Content-Disposition: form-data; name="source"; filename="trailer.mp4"')
-    body.append("Content-Type: video/mp4")
-    body.append("")
-    body.append(vid_data)
-    body.append(f"--{boundary}--")
-    
-    # Join all parts
-    body_data = b"\r\n".join(b if isinstance(b, bytes) else b for b in body)
+    body += f"--{boundary}\r\n".encode()
+    body += b'Content-Disposition: form-data; name="source"; filename="trailer.mp4"\r\n'
+    body += b"Content-Type: video/mp4\r\n\r\n"
+    body += vid_data + b"\r\n"
+    body += f"--{boundary}--\r\n".encode()
     
     url = f"https://graph.facebook.com/v22.0/{PAGE_ID}/videos?access_token={TOKEN}"
-    req = urllib.request.Request(url, data=body_data)
+    req = urllib.request.Request(url, data=body)
     req.add_header("Content-Type", f"multipart/form-data; boundary={boundary}")
     
     try:
